@@ -1,0 +1,10 @@
+# Anti-Forensics Demo Project - Python Dependencies
+
+# This project uses only Python standard library modules (ctypes, sys)
+# No external packages are required for runtime
+
+# Python version requirement
+# python>=3.11.9
+
+# Build dependencies
+pyinstaller>=5.0.0  # For creating standalone executable

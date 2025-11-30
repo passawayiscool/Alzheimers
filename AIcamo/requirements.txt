@@ -1,0 +1,11 @@
+pandas
+torch
+numpy
+pyarrow
+watchdog
+psutil
+pyyaml
+matplotlib
+seaborn
+tqdm
+playwright

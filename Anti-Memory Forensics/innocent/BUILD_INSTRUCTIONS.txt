@@ -1,0 +1,14 @@
+================================================================================
+Building and Running the Anti-Forensics Demo
+================================================================================
+
+STEP 1: Build the Project
+--------------------------
+Open "x64 Native Tools Command Prompt for VS" (Administrator)
+
+cd "path\to\innocent"
+build.bat
+
+This will create:
+  - helper.dll (contains one-time and active functions)
+  - innocent.exe (main process)

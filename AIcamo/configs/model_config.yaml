@@ -1,0 +1,183 @@
+# Model Configuration for Cybersecurity Simulation Framework
+
+# Data Configuration
+data:
+  raw_data_path: "data/raw"
+  processed_data_path: "data/processed"
+  vocab_path: "data/vocab"
+  max_sequence_length: 128  # Maximum number of events in a sequence
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+
+# Event Types
+event_types:
+  - process_create
+  - process_exit
+  - file_read
+  - file_write
+  - file_delete
+  - registry_read
+  - registry_write
+  - network_connect
+  - network_dns
+  - dll_load
+
+# Model Architecture
+# Model Architecture
+model:
+  dropout: 0.1
+  max_seq_len: 256    # Increased to 256 to fit full split-path events
+  embedding_dim: 64   # Reduced from 128
+  hidden_dim: 128     # Reduced from 256
+  latent_dim: 16      # Reduced from 32
+  n_layers: 2
+
+# Training Configuration
+training:
+  # Hardware
+  device: "cpu"
+  num_workers: 0
+  pin_memory: false
+
+  # Hyperparameters
+  batch_size: 128 # Reduced for better gradients
+  num_epochs: 1
+  learning_rate_generator: 0.0001
+  learning_rate_discriminator: 0.0004
+  beta1: 0.5
+  beta2: 0.999
+
+  # Loss weights (Increase adversarial to fight mode collapse)
+  reconstruction_weight: 0.5
+  adversarial_weight: 2.0
+
+  # Training strategy (Train discriminator more to push generator harder)
+  discriminator_steps: 3
+  generator_steps: 1
+
+  # Checkpointing
+  checkpoint_dir: "checkpoints/small_host_gan"
+  save_every: 1
+  keep_last_n_checkpoints: 3
+
+  # Logging
+  log_dir: "logs"
+  log_every: 100
+  wandb_project: "cyberdefense-simulation"
+  wandb_entity: null
+
+# Generation Configuration
+generation:
+  temperature: 0.5  # Sampling temperature (lower = more stable)
+  top_k: 50  # Top-k filtering
+  top_p: 0.9  # Nucleus sampling
+  min_sequence_length: 5
+  max_sequence_length: 16 # Increased to allow longer event chains
+
+  # Context-aware generation
+  context_window: 32  # Use last N events as context
+
+  # Scenario templates
+  scenarios:
+    lotl_exfiltration:
+      description: "Living-off-the-land data exfiltration"
+      seed_events:
+        - type: "process_create"
+          process: "explorer.exe"
+        - type: "file_read"
+          operation: "bulk_access"
+      target_processes: ["powershell.exe", "cmd.exe", "bitsadmin.exe"]
+      duration: 3600
+
+    software_update:
+      description: "Legitimate software update activity"
+      seed_events:
+        - type: "network_connect"
+          destination: "update_server"
+      target_processes: ["svchost.exe", "wuauclt.exe"]
+      duration: 1800
+
+    developer_activity:
+      description: "Software developer workflow"
+      seed_events:
+        - type: "process_create"
+          process: "devenv.exe"
+      target_processes: ["git.exe", "node.exe", "python.exe"]
+      duration: 7200
+
+# Network Traffic Configuration
+network:
+  pcap_output_dir: "outputs/pcaps"
+
+  # Traffic types
+  traffic_types:
+    - http
+    - https
+    - dns
+    - smb
+    - rdp
+
+  # Packet parameters
+  mtu: 1500
+  timestamp_precision: "microseconds"
+
+  # Benign traffic profiles
+  profiles:
+    cloud_backup:
+      protocol: "https"
+      ports: [443]
+      packet_size_range: [64, 1460]
+      session_duration: [300, 3600]
+
+    web_browsing:
+      protocol: "https"
+      ports: [443, 80]
+      packet_size_range: [64, 1460]
+      session_duration: [10, 300]
+
+    file_sharing:
+      protocol: "smb"
+      ports: [445]
+      packet_size_range: [64, 65535]
+      session_duration: [60, 1800]
+
+# Quantization Configuration
+quantization:
+  backend: "x86"  # x86 for CPU
+  dtype: "qint8"  # qint8 for INT8 quantization
+  calibration_batches: 100
+  output_path: "checkpoints/quantized"
+
+# VM Automation Configuration
+vm_automation:
+  enabled: false  # Set to true when using VM automation
+  vm_platform: "virtualbox"  # virtualbox, vmware, hyper-v
+
+  personas:
+    developer:
+      activities:
+        - "code_editing"
+        - "git_operations"
+        - "package_installation"
+        - "debugging"
+        - "web_research"
+      duration: 7200
+      applications: ["vscode", "chrome", "git", "python", "node"]
+
+    office_worker:
+      activities:
+        - "document_editing"
+        - "email"
+        - "web_browsing"
+        - "file_management"
+      duration: 7200
+      applications: ["word", "excel", "outlook", "chrome", "explorer"]
+
+    casual_user:
+      activities:
+        - "web_browsing"
+        - "media_streaming"
+        - "file_downloads"
+      duration: 3600
+      applications: ["chrome", "vlc", "explorer"]

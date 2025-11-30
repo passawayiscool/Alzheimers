@@ -1,0 +1,53 @@
+1. PROBE - Memory Region Enumeration
+What It Does:
+Lists all memory regions in a process by walking the VAD tree.
+
+How It Works:
+Step 1: Locate VAD Tree Root
+
+================================================================================
+HOW IT WORKS (PROJECT IMPLEMENTATION)
+================================================================================
+
+This project demonstrates two advanced memory anti-forensics techniques:
+
+1. VAD Hiding
+-----------------
+Unlinks a memory region's metadata (VAD node) from the process's VAD tree, making the region invisible to standard enumeration techniques.
+
+How it works:
+- Finds the VAD node for the target region and removes it from the tree.
+- The process can still access the memory normally.
+
+Forensic Impact:
+- Tools like Process Hacker, VMMap, and Volatility (VAD scan) cannot see the region.
+- Physical memory still contains the data, but it is not linked to the process.
+
+2. PTE Manipulation
+---------------------
+Modifies the Page Table Entry (PTE) for a memory page, typically by clearing the Present bit.
+
+How it works:
+- Calculates the PTE address for the target virtual address.
+- Reads the current PTE, clears the Present bit, and writes it back.
+- The CPU thinks the page isn't in memory; any access triggers a page fault.
+
+Forensic Impact:
+- Most tools and scanners cannot access the memory.
+- The process will crash if it tries to use the hidden memory.
+- Data remains in physical RAM but is hidden from logical view.
+
+3. Usage in the Project
+------------------------
+- Clones a secret function into a new memory region.
+- Wipes the original function from the DLL.
+- Allows manipulation (hide/restore) of the cloned region using VAD and PTE techniques via commands.
+
+4. Forensic Impact Summary
+---------------------------
+- Live tools: Cannot enumerate or access hidden regions.
+- Physical memory dumps: Data may still be present, but not linked to the process.
+- Advanced forensics: May recover orphaned data, but attribution is difficult.
+
+================================================================================
+END OF DOCUMENT
